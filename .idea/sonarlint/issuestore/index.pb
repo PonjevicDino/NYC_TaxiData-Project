@@ -1,0 +1,13 @@
+
+@
+requirements.txt,1/9/19359a61ae2446b51b549167b014da2fcf265768
+9
+	user.avsc,3/a/3a80663a6347897a7b53e9c516e6ffee818f2d39
+6
+orc.py,7/0/70276ffb40e15f85451ffd82f9361ca178c9809b
+:
+
+parquet.py,0/9/09ce65fab10383abb5716ee4f52880c7b162e9d8
+:
+
+avro_ex.py,d/8/d83b59eae2e4d660842bc030e0939cca8235419b
