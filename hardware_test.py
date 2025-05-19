@@ -5,8 +5,6 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 import pyarrow.compute as pc
 
-dataSet_path = "../Datasets/NYC_TaxiData"
-
 # Try to read and print the whole Dataset (loads ~7ß GB into RAM) --> Fails - malloc!
 #dataset = pq.ParquetDataset(dataSet_path + "/")
 #table_partitioned = dataset.read()
@@ -57,8 +55,8 @@ def calculate_memory_usage(dataSet_path, start_year, method="none"):
 
 
 # Configuration
-dataSet_path = "../Datasets/NYC_TaxiData"
-start_year = 2020  # Your target start year
+dataSet_path = "./Dataset_Modified"
+start_year = 2011  # Your target start year
 
 # Choose method: "metadata" (fast) or "direct" (accurate)
 total_bytes = calculate_memory_usage(dataSet_path, start_year, method="direct")

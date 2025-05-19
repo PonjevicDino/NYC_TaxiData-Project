@@ -1,0 +1,92 @@
+Type (String) - First part of Filename:
+    Green
+    Yellow
+    FHV
+    FHVHV
+
+Vendor ID (String):
+    Yellow - VendorID:
+        1 = Creative ...
+        2 = Curb ...
+        6 = Myle ...
+        7 = Helix
+    Green - VendorID:
+        1 = Creative ...
+        2 = Curb ...
+        6 = Myle ...
+    FHV:
+        NONE --> 0 / null
+    FHVHV - hvfhs_licence_num:
+        HV0002 = Juno
+        HV0003 = Uber
+        HV0004 = Via
+        HV0005 = Lyft
+
+
+Request Time (timestamp):
+    Yellow - NONE --> null (does not exist)
+    Green - NONE --> null (does not exist)
+    FHV - NONE --> null (does not exist)
+    FHVHV - request_datetime
+
+On Scene Time (timestamp):
+    Yellow - NONE --> null (does not exist)
+    Green - NONE --> null (does not exist)
+    FHV - NONE --> null (does not exist)
+    FHVHV - on_scene_datetime
+
+Trip Start (Timestamp):
+    Yellow - tpep_pickup_datetime
+    Green - lpep_pickup_datetime
+    FHV - pickup_datetime
+    FHVHV - pickup_datetime
+
+Trip End (Timestamp):
+    Yellow - tpep_dropoff_datetime
+    Green - lpep_dropoff_datetime
+    FHV - dropOff_datetime
+    FHVHV - dropoff_datetime
+
+Trip duration --> Calculate from Start/End
+
+Passengers (int):
+    Yellow - passenger_count
+    Green - passenger_count
+    FHV - NONE --> null
+    FHVHV - NONE --> 0 (no passenger amount but a "group-flag")
+
+Start Zone (int):
+    Yellow - PULocationID
+    Green - PULocationID
+    FHV - PUlocationID --> often missing
+    FHVHV - PULocationID
+
+End Zone (int):
+    Yellow - DOLocationID
+    Green - DOLocationID
+    FHV - DOlocationID --> often missing
+    FHVHV - DOLocationID --> sometimes missing
+
+Trip Distance (float):
+    Yellow - trip_distance
+    Green - trip_distance
+    FHV - NONE --> null
+    FHVHV - trip_miles
+
+Payment Type (int):
+    Yellow - payment_type
+    Green - payment_type
+    FHV - NONE --> null
+    FHVHV - NONE --> -1 (Uber... is booked Online)
+
+Forward Stored Flag (bool):
+    Yellow - store_and_fwd_flag
+    Green - store_and_fwd_flag
+    FHV - NONE --> null (does not exist)
+    FHVHV - NONE --> null (does not exist)
+
+Tip Amount (float):
+    Yellow - tip_amount
+    Green - tip_amount
+    FHV - NONE --> null
+    FHVHV - tips
