@@ -8,7 +8,7 @@ import pyarrow.compute as pc
 
 import numpy as np
 
-dataset_root = "./Dataset_Modified/2015"
+dataset_root = "./Dataset_Modified"
 
 dataset = pq.ParquetDataset(dataset_root + "/")
 dataset_table = dataset.read().to_pandas()

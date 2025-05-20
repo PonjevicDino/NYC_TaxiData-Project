@@ -9,7 +9,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 import pyarrow.compute as pc
 
-dataset_root = "./Dataset_Modified/2015"
+dataset_root = "./Dataset_Modified"
 
 dataset = pq.ParquetDataset(dataset_root + "/")
 dataset_table = dataset.read()
