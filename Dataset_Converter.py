@@ -11,8 +11,8 @@ SERVICE_TYPE_MAP = {
     'fhvhv': 'FHVHV'
 }
 
-ORIGINAL_ROOT = 'Dataset'
-NEW_ROOT = 'Dataset_Modified'
+ORIGINAL_ROOT = '../Datasets/NYC_TaxiData/2019'
+NEW_ROOT = 'Dataset_Modified/2019'
 COMPRESSION = 'gzip'  # Alternatives: 'gzip', 'snappy'
 
 
@@ -89,7 +89,7 @@ def process_parquet(file_path):
             new_df['End_Zone'] = df.get('DOLocationID', pd.Series(0, index=df.index)).fillna(0).astype('Int32')
             new_df['Trip_Distance'] = df['trip_miles'].astype('float32')
             new_df['Payment_Type'] = -1
-            new_df['Forward_Stored_Flag'] = pd.NA
+            new_df['Forward_Stored_Flag'] = False
             new_df['Tip_Amount'] = df['tips'].astype('float32')
 
         # Calculate trip duration in seconds
