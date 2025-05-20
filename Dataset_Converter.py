@@ -11,8 +11,8 @@ SERVICE_TYPE_MAP = {
     'fhvhv': 'FHVHV'
 }
 
-ORIGINAL_ROOT = '../Datasets/NYC_TaxiData/2019'
-NEW_ROOT = 'Dataset_Modified/2019'
+ORIGINAL_ROOT = '../Datasets/NYC_TaxiData'
+NEW_ROOT = 'Dataset_Modified'
 COMPRESSION = 'gzip'  # Alternatives: 'gzip', 'snappy'
 
 
