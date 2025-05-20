@@ -1,41 +1,59 @@
-import os
 import pandas as pd
-import numpy as np
-from pathlib import Path
-
-import shutil
-
 import pyarrow as pa
 import pyarrow.parquet as pq
-import pyarrow.compute as pc
+from pathlib import Path
 
 dataset_root = "./Dataset_Modified"
+output_file = './RQ2.parquet'
 
-dataset = pq.ParquetDataset(dataset_root + "/")
-dataset_table = dataset.read().to_pandas()
+all_pairs = []
+all_start_zones = []
 
-grouped_data = dataset_table.groupby(['Start_Zone', 'End_Zone']).agg(
-    Count=('Trip_Distance', 'size'),
-    Avg_Distance=('Trip_Distance', 'mean')
-).reset_index()
+for parquet_file in Path(dataset_root).rglob("*.parquet"):
+    print("Processing: " + parquet_file.name)
 
-grouped_data = grouped_data.loc[grouped_data.groupby('Start_Zone')['Count'].idxmax()]
+    df = pq.read_table(parquet_file).to_pandas()
 
-grouped_data = grouped_data[['Start_Zone', 'End_Zone', 'Avg_Distance']].copy()
-grouped_data = grouped_data.rename(columns={'End_Zone': 'Favorite_End_Zone'})
+    zone_combinations = df.groupby(['Start_Zone', 'End_Zone']).agg(
+        Count=('Trip_Distance', 'size'),
+        Sum_Distance=('Trip_Distance', 'sum')
+    ).reset_index()
+    all_pairs.append(zone_combinations)
 
-avg_total_distance_per_start_zone = dataset_table.groupby('Start_Zone')['Trip_Distance'].mean().reset_index()
-avg_total_distance_per_start_zone = avg_total_distance_per_start_zone.rename(columns={'Trip_Distance': 'Avg_Total_Distance'})
+    start_zone_group = df.groupby('Start_Zone').agg(
+        Total_Count=('Trip_Distance', 'size'),
+        Total_Sum=('Trip_Distance', 'sum')
+    ).reset_index()
+    all_start_zones.append(start_zone_group)
 
-final_result_df = pd.merge(grouped_data, avg_total_distance_per_start_zone,
-                           on='Start_Zone',
-                           how='left')
+zone_pairs = pd.concat(all_pairs, ignore_index=True)
+final_pairs = zone_pairs.groupby(['Start_Zone', 'End_Zone']).agg({
+    'Count': 'sum',
+    'Sum_Distance': 'sum'
+}).reset_index()
 
-final_result_df = final_result_df[['Start_Zone', 'Favorite_End_Zone', 'Avg_Distance', 'Avg_Total_Distance']]
-output_pa_table = pa.Table.from_pandas(final_result_df, preserve_index=False)
+final_pairs['Avg_Distance'] = final_pairs['Sum_Distance'] / final_pairs['Count']
+index = final_pairs.groupby('Start_Zone')['Count'].idxmax()
+favorite_zones = final_pairs.loc[index, ['Start_Zone', 'End_Zone', 'Avg_Distance']]
+favorite_zones = favorite_zones.rename(columns={'End_Zone': 'Favorite_End_Zone'})
 
-output_file_name = './RQ2.parquet'
+combined_start = pd.concat(all_start_zones, ignore_index=True)
+start_zone_avg = combined_start.groupby('Start_Zone').agg({
+    'Total_Count': 'sum',
+    'Total_Sum': 'sum'
+}).reset_index()
+start_zone_avg['Avg_Total_Distance'] = start_zone_avg['Total_Sum'] / start_zone_avg['Total_Count']
+
+final_result = pd.merge(
+    favorite_zones,
+    start_zone_avg[['Start_Zone', 'Avg_Total_Distance']],
+    on='Start_Zone',
+    how='left'
+)
+
+final_table = pa.Table.from_pandas(final_result, preserve_index=False)
+
 try:
-    pq.write_table(output_pa_table, output_file_name)
+    pq.write_table(final_table, output_file_name)
 except Exception as e:
     print(e)

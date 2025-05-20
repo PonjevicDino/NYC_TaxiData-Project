@@ -1,46 +1,32 @@
 import os
 import pandas as pd
-import numpy as np
-from pathlib import Path
-
-import shutil
-
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pyarrow.compute as pc
+from pathlib import Path
 
 dataset_root = "./Dataset_Modified"
+output_parquet_path = "./RQ1.parquet"
 
-dataset = pq.ParquetDataset(dataset_root + "/")
-dataset_table = dataset.read()
+all_passenger_sums = []
+all_passenger_avgs = []
 
-years = pc.year(dataset_table.column("Trip_Start"))
-years = pc.cast(years, pa.string())
+for parquet_file in Path(dataset_root).rglob("*.parquet"):
+    print("Processing: " + parquet_file.name)
 
-months = pc.month(dataset_table.column("Trip_Start"))
-months = pc.cast(months, pa.string())
-months = pc.ascii_lpad(months, 2, '0')
+    df = pq.read_table(parquet_file).to_pandas()
 
-hyphens = pa.array(['-'] * len(dataset_table))
+    df['month'] = df['Trip_Start'].dt.strftime('%Y-%m')
+    table = pa.Table.from_pandas(df, preserve_index=False)
 
-years = years.combine_chunks() if isinstance(years, pa.ChunkedArray) else years
-hyphens = hyphens.combine_chunks() if isinstance(hyphens, pa.ChunkedArray) else hyphens
-months = months.combine_chunks() if isinstance(months, pa.ChunkedArray) else months
+    passenger_sum = table.group_by(['Vendor_ID', 'month']).aggregate([('Passengers', 'sum')]).to_pandas()
+    passenger_avg = table.group_by(['Vendor_ID', 'month']).aggregate([('Passengers', 'mean')]).to_pandas()
 
-year_series = years.to_pandas()
-hyphen_series = hyphens.to_pandas()
-padded_month_series = months.to_pandas()
+    all_passenger_sums.append(passenger_sum)
+    all_passenger_avgs.append(passenger_avg)
 
-dates = year_series + hyphen_series + padded_month_series
-dates = pa.Array.from_pandas(dates)
-
-new_dataset_table = dataset_table.append_column("month", dates)
-
-passenger_sum = new_dataset_table.group_by(['Vendor_ID', 'month']).aggregate([('Passengers', 'sum')]).to_pandas().sort_values(by=['Vendor_ID', 'Passengers_sum'], ascending=False)
-print(passenger_sum)
-
-passenger_avg = new_dataset_table.group_by(['Vendor_ID', 'month']).aggregate([('Passengers', 'mean')]).to_pandas().sort_values(by=['Vendor_ID', 'Passengers_mean'], ascending=False)
-print(passenger_avg)
+passenger_sum = pd.concat(all_passenger_sums).groupby(['Vendor_ID', 'month']).sum().reset_index()
+passenger_avg = pd.concat(all_passenger_avgs).groupby(['Vendor_ID', 'month']).mean().reset_index()
 
 merged_data = pd.merge(
     passenger_sum,
@@ -48,10 +34,9 @@ merged_data = pd.merge(
     on=['Vendor_ID', 'month'],
     suffixes=('_sum', '_mean')
 )
-merged_data['Ride_Count'] = merged_data['Passengers_sum'] / merged_data['Passengers_mean']
-print(merged_data)
 
-output_parquet_path = "./RQ1.parquet"
+merged_data['Ride_Count'] = merged_data['Passengers_sum'] / merged_data['Passengers_mean']
+
 try:
     merged_data.to_parquet(output_parquet_path, index=False)
 except Exception as e:
