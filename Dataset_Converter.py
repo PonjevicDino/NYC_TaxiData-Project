@@ -37,7 +37,7 @@ def process_parquet(file_path):
             return pd.to_datetime(df[col], errors='coerce') if col in df.columns else pd.NaT
 
         if service_key == 'yellow':
-            new_df['Vendor_ID'] = df['VendorID'].astype("string")
+            new_df['Vendor_ID'] = "T0000" + df['VendorID'].astype("string")
             new_df['Request_Time'] = pd.NaT
             new_df['OnScene_Time'] = pd.NaT
             new_df['Trip_Start'] = safe_convert('tpep_pickup_datetime')
@@ -51,7 +51,7 @@ def process_parquet(file_path):
             new_df['Tip_Amount'] = df['tip_amount'].astype('float32')
 
         elif service_key == 'green':
-            new_df['Vendor_ID'] = df['VendorID'].astype("string")
+            new_df['Vendor_ID'] = "T0000" + df['VendorID'].astype("string")
             new_df['Request_Time'] = pd.NaT
             new_df['OnScene_Time'] = pd.NaT
             new_df['Trip_Start'] = safe_convert('lpep_pickup_datetime')
