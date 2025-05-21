@@ -54,6 +54,6 @@ final_result = pd.merge(
 final_table = pa.Table.from_pandas(final_result, preserve_index=False)
 
 try:
-    pq.write_table(final_table, output_file_name)
+    pq.write_table(final_table, output_file)
 except Exception as e:
     print(e)
