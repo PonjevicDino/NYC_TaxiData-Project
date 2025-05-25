@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 
-# Mapping from filename prefix to output Type
 SERVICE_TYPE_MAP = {
     'yellow': 'Yellow',
     'green': 'Green',
@@ -13,8 +12,7 @@ SERVICE_TYPE_MAP = {
 
 ORIGINAL_ROOT = '../Datasets/NYC_TaxiData'
 NEW_ROOT = 'Dataset_Modified'
-COMPRESSION = 'gzip'  # Alternatives: 'gzip', 'snappy'
-
+COMPRESSION = 'gzip'
 
 def process_parquet(file_path):
     filename = file_path.name
@@ -29,10 +27,8 @@ def process_parquet(file_path):
         df = pd.read_parquet(file_path)
         new_df = pd.DataFrame()
 
-        # Set Type column as string type with proper values
         new_df['Type'] = pd.Series([service_type] * len(df), dtype="string")
 
-        # Common timestamp conversion
         def safe_convert(col):
             return pd.to_datetime(df[col], errors='coerce') if col in df.columns else pd.NaT
 
@@ -92,19 +88,16 @@ def process_parquet(file_path):
             new_df['Forward_Stored_Flag'] = False
             new_df['Tip_Amount'] = df['tips'].astype('float32')
 
-        # Calculate trip duration in seconds
         new_df['Trip_Duration'] = (
             (new_df['Trip_End'] - new_df['Trip_Start'])
             .dt.total_seconds()
             .astype('Int64')
         )
 
-        # Create output path
         relative_path = file_path.relative_to(ORIGINAL_ROOT)
         output_path = Path(NEW_ROOT) / relative_path
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        # Save with compression
         new_df.to_parquet(
             output_path,
             index=False,
@@ -112,7 +105,6 @@ def process_parquet(file_path):
             engine='pyarrow'
         )
 
-        # Calculate sizes
         orig_size = file_path.stat().st_size
         new_size = output_path.stat().st_size
         ratio = (new_size / orig_size) * 100
@@ -129,7 +121,6 @@ def process_parquet(file_path):
         print(f"Error processing {file_path}: {str(e)}")
 
 
-# Main processing loop
 for parquet_file in Path(ORIGINAL_ROOT).rglob('*.parquet'):
     if parquet_file.is_file():
         process_parquet(parquet_file)
